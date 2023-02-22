@@ -24,7 +24,24 @@ module Blazer
 
     if Blazer.override_csp
       after_action do
-        response.headers['Content-Security-Policy'] = "default-src 'self' https: 'unsafe-inline' 'unsafe-eval' data: blob:"
+        script_nonce = if Rails.application.config.content_security_policy_nonce_directives&.include?("script-src")
+          content_security_policy_nonce
+        else
+          raise Blazer::Error, "couldn't find nonce for script-src"
+        end
+
+        response.headers['Content-Security-Policy'] = <<~CSP.squish
+        default-src 'self';
+        base-uri 'none';
+        img-src 'self' data: blob:;
+        script-src 'self' 'nonce-#{script_nonce}' 'strict-dynamic' 'unsafe-eval' 'report-sample';
+        style-src 'self' 'unsafe-inline' 'report-sample';
+        object-src 'none';
+        connect-src 'self' https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com;
+        child-src blob:;
+        worker-src blob: ;
+        form-action 'self';
+        CSP
       end
     end
 
