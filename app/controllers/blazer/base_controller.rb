@@ -33,9 +33,9 @@ module Blazer
         response.headers['Content-Security-Policy'] = <<~CSP.squish
         default-src 'self';
         base-uri 'none';
-        img-src 'self' data: blob:;
+        img-src 'self' #{Rails.configuration.asset_host} data: blob:;
         script-src 'self' 'nonce-#{script_nonce}' 'strict-dynamic' 'unsafe-eval' 'report-sample';
-        style-src 'self' 'unsafe-inline' 'report-sample';
+        style-src 'self' #{Rails.configuration.asset_host} 'unsafe-inline' 'report-sample';
         object-src 'none';
         connect-src 'self' https://*.tiles.mapbox.com https://api.mapbox.com https://events.mapbox.com;
         child-src blob:;
